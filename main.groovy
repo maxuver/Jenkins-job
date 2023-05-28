@@ -4,23 +4,23 @@ node("masterLin"){
     def artifactId
     def groupId
     def context
-     stage('Скачиваем скрипты c Git') {
+     stage('Downloading scripts from Git') {
        echo 'Step 1'
-       echo "Скачиваем репозиторий со скриптами управления."
+       echo "Downloading the repository with management scripts."
        checkout([$class: 'GitSCM', branches: [[name: "*/${BRANCH}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: "${URLGIT}", credentialsId: "bitbucket_cred"]]])
            }
 
-     stage('Парсинг конфигурационных файлов и скачивание дистрибутива') {
+     stage('Parsing configuration files and downloading distribution') {
        echo 'Step 2'
        getConfig()
        context=this
        context.wrap([$class: 'BuildUser']){ // plugin BUILD USER VARS
-       this.currentUser = context.env.BUILD_USER ?: "Задание запущено с помощью токена"
+       this.currentUser = context.env.BUILD_USER ?: "Task started using a token"
        this.currentUserEmail = context.env.BUILD_USER_EMAIL ?: false
        notifyStart()
      }
     }
-     stage('Выполнение операции') {
+     stage('Performing operation') {
         echo 'Step 3'
         try {
           def result
@@ -28,7 +28,7 @@ node("masterLin"){
       
           dir("./deploy/") {
               timestamps{
-                echo "Используем ansiblePlaybook.yml"
+                echo "Using ansiblePlaybook.yml"
                            
                 ansiblePlaybook (
                                         playbook: "./config_ws.yml",
@@ -43,18 +43,18 @@ node("masterLin"){
             }
           
           if(result==0) {
-            echo "Действие выполнено успешно result: ${result} на стенде: ${HOSTNAME}"
+            echo "Action executed successfully. Result ${result} on host: ${HOSTNAME}"
           } else {
-            echo "Действие провалено result: ${result} на стенде: ${HOSTNAME}"
+            echo "Action failed. Result ${result} on host: ${HOSTNAME}"
             error ("Операция провалена, смотри лог!")
           }
         } catch(Ex) {
           echo "${Ex.toString()}"
           currentBuild.result = "FAILED"
-          error ("Операция провалена, смотри лог!")
+          error ("Operation failed, check the log!")
         }
       }
-      stage('Смоук тест') {
+      stage('Smoke test') {
         echo 'Step 5'
         smokeTest()
       }
@@ -74,12 +74,12 @@ def getConfig() {
   urls = []
   try {
       mailgroup = configXml.Subsystem.mailgroup.toString()
-      echo "Группа рассылки: ${mailgroup}"
+      echo "Mailing group: ${mailgroup}"
       for(url in configXml.Subsystem.url){
           url = url.toString()
           urls.push("${url}")
         }
-      echo "Будем проверять URLs: ${urls}"
+      echo "Checking URLs: ${urls}"
   } catch (Ex) {
       echo "Error=${Ex.toString()}"
   }
@@ -91,16 +91,16 @@ def smokeTest() {
   try {
          for(url_test in urls) {
                response=httpRequest url: "${url_test}", validResponseCodes: '200:600'
-               println ("Статус страницы:" +response.status)
+               println ("Page status:" +response.status)
                if (response.status == 200) {
-                      echo "Страница доступна"
+                      echo "Page is accessible"
                } else {
                       sleep 300
                       response=httpRequest url: "${url_test}", validResponseCodes: '200:600'
                       if (response.status == 200) {
-                              echo "Страница доступна"
+                              echo "Page is accessible"
                       } else {
-                              error ("Страница недоступна, нужно проверить вручную.")
+                              error ("Page is not accessible, manual verification is required.")
                       }
                }
          }
@@ -111,12 +111,12 @@ def smokeTest() {
 def notifyStart() {
      emailext (
              mimeType: 'text/plain',
-             subject: "Выполняется операция config_ws на сервере PSI ${urls}",
-             body: """В рамках проведения работ выполняется операция config_ws на сервере PSI ${urls}
-             На ТЕСТОВОМ стенде ${HOSTNAME}
-             Лог процесса доступен по ссылке: ${env.BUILD_URL}console
+             subject: "Executing config_ws operation on PSI server ${urls}",
+             body: """As part of the work, the config_ws operation is being executed on the PSI server ${urls}
+             On the TEST stand ${HOSTNAME}
+             Log of the process is available at: ${env.BUILD_URL}console
              Workspace: ${env.BUILD_URL}execution/node/3/ws/
-             Задание запущено пользователем ${this.currentUser}
+             The task was started by user ${this.currentUser}
              ${this.currentUserEmail}""",
              to: "Patsyuk-MY@mail.sbrf.ru"
      )
@@ -124,10 +124,10 @@ def notifyStart() {
 def notifySuccessful() {
      emailext (
              mimeType: 'text/plain',
-             subject: "Операция config_ws выполнена УСПЕШНО на стенде PSI ${HOSTNAME}",
-             body: """Операция config_ws на '${env.JOB_NAME} [${env.BUILD_NUMBER}]' выполнена УСПЕШНО:
-             На ТЕСТОВОМ стенде ${HOSTNAME}
-             Проверьте лог по ссылке: ${env.BUILD_URL}console
+             subject: "config_ws operation completed SUCCESSFULLY on PSI server ${HOSTNAME}",
+             body: """The config_ws operation on '${env.JOB_NAME} [${env.BUILD_NUMBER}]' completed SUCCESSFULLY:
+             On the TEST stand ${HOSTNAME}
+             Check the log at: ${env.BUILD_URL}console
              Workspace: ${env.BUILD_URL}execution/node/3/ws/""",
              to: "${mailgroup}"
      ) 
@@ -136,10 +136,10 @@ def notifyFailed() {
      emailext (
              mimeType: 'text/plain',
              attachLog: true, compressLog: true,
-             subject: "Операция config_ws ПРОВАЛЕНА на стенде PSI ${HOSTNAME}",
-             body: """Операция playbook на '${env.JOB_NAME} [${env.BUILD_NUMBER}]' ПРОВАЛЕНА:
-             На ТЕСТОВОМ стендe ${HOSTNAME}
-             Проверьте лог по ссылке: ${env.BUILD_URL}console
+             subject: "config_ws operation FAILED on PSI server ${HOSTNAME}",
+             body: """The playbook operation on '${env.JOB_NAME} [${env.BUILD_NUMBER}]' FAILED:
+             On the TEST stand ${HOSTNAME}
+             Check the log at: ${env.BUILD_URL}console
              Workspace: ${env.BUILD_URL}execution/node/3/ws/""",
              to: "${mailgroup}"
      )
