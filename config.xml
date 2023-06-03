@@ -1,0 +1,130 @@
+<flow-definition plugin="workflow-job@2.41">
+<actions/>
+<description/>
+<keepDependencies>false</keepDependencies>
+<properties>
+<hudson.plugins.jira.JiraProjectProperty plugin="jira@3.1.1"/>
+<hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.4-SNAPSHOT">
+<useBuildBlocker>false</useBuildBlocker>
+<blockLevel>GLOBAL</blockLevel>
+<scanQueueFor>DISABLED</scanQueueFor>
+<blockingJobs/>
+</hudson.plugins.buildblocker.BuildBlockerProperty>
+<io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty plugin="openshift-sync@1.0.45">
+<uid/>
+<namespace/>
+<name/>
+<resourceVersion/>
+</io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty>
+<com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.13">
+<gitLabConnection/>
+</com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+<com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.32">
+<autoRebuild>false</autoRebuild>
+<rebuildDisabled>false</rebuildDisabled>
+</com.sonyericsson.rebuild.RebuildSettings>
+<com.synopsys.arc.jenkinsci.plugins.jobrestrictions.jobs.JobRestrictionProperty plugin="job-restrictions@0.8"/>
+<hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.0.3">
+<maxConcurrentPerNode>0</maxConcurrentPerNode>
+<maxConcurrentTotal>0</maxConcurrentTotal>
+<categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+<throttleEnabled>false</throttleEnabled>
+<throttleOption>project</throttleOption>
+<limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+<paramsToUseForLimit/>
+<configVersion>1</configVersion>
+</hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+<hudson.model.ParametersDefinitionProperty>
+<parameterDefinitions>
+<hudson.model.ChoiceParameterDefinition>
+<name>HOSTNAME</name>
+<description/>
+<choices class="java.util.Arrays$ArrayList">
+<a class="string-array">
+<string>tklia-bof000005</string>
+<string>tklia-bof000041</string>
+<string>tkli-bof0010</string>
+<string>tklia-bof000009</string>
+<string>tklia-bof000017</string>
+<string>tklia-bof000025</string>
+<string>tklia-bof000029</string>
+<string>tklia-bof000033</string>
+<string>tklia-bof000037</string>
+<string>tklia-bof000045</string>
+<string>tklia-bof000001</string>
+</a>
+</choices>
+</hudson.model.ChoiceParameterDefinition>
+<hudson.model.StringParameterDefinition>
+<name>BRANCH</name>
+<description/>
+<defaultValue>PSI_WAS_3TB</defaultValue>
+<trim>false</trim>
+</hudson.model.StringParameterDefinition>
+<hudson.model.ChoiceParameterDefinition>
+<name>ID_TB</name>
+<description/>
+<choices class="java.util.Arrays$ArrayList">
+<a class="string-array">
+<string>70</string>
+<string>18</string>
+<string>44</string>
+<string>16</string>
+<string>54</string>
+<string>42</string>
+<string>40</string>
+<string>13</string>
+<string>52</string>
+<string>55</string>
+<string>38</string>
+</a>
+</choices>
+</hudson.model.ChoiceParameterDefinition>
+<hudson.model.BooleanParameterDefinition>
+<name>saveParam</name>
+<description>Сохранение лога</description>
+<defaultValue>false</defaultValue>
+</hudson.model.BooleanParameterDefinition>
+<hudson.model.PasswordParameterDefinition>
+<name>VAULT_PASSWORD_PHRASE</name>
+<description/>
+<defaultValue>********</defaultValue>
+</hudson.model.PasswordParameterDefinition>
+<com.wangyin.parameter.WHideParameterDefinition plugin="hidden-parameter@0.0.4">
+<name>URLGIT</name>
+<description/>
+<defaultValue>ssh://git@sbrf-bitbucket.ca.sbrf.ru:7999/ci00080066/ci00080066_wscontrol.git</defaultValue>
+</com.wangyin.parameter.WHideParameterDefinition>
+<com.wangyin.parameter.WHideParameterDefinition plugin="hidden-parameter@0.0.4">
+<name>CREDID</name>
+<description/>
+<defaultValue>bitbucket_cred</defaultValue>
+</com.wangyin.parameter.WHideParameterDefinition>
+</parameterDefinitions>
+</hudson.model.ParametersDefinitionProperty>
+<com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty plugin="ownership@0.13.1.1-SNAPSHOT"/>
+</properties>
+<definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.93">
+<scm class="hudson.plugins.git.GitSCM" plugin="git@4.8.3">
+<configVersion>2</configVersion>
+<userRemoteConfigs>
+<hudson.plugins.git.UserRemoteConfig>
+<url>ssh://git@sbrf-bitbucket.ca.sbrf.ru:7999/ci00080066/ci00080066_wscontrol.git</url>
+<credentialsId>bitbucket_cred</credentialsId>
+</hudson.plugins.git.UserRemoteConfig>
+</userRemoteConfigs>
+<branches>
+<hudson.plugins.git.BranchSpec>
+<name>*/PSI_WAS_3TB</name>
+</hudson.plugins.git.BranchSpec>
+</branches>
+<doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+<submoduleCfg class="list"/>
+<extensions/>
+</scm>
+<scriptPath>main.groovy</scriptPath>
+<lightweight>true</lightweight>
+</definition>
+<triggers/>
+<disabled>false</disabled>
+</flow-definition>
